@@ -1,34 +1,70 @@
 # Twin + Next.js (App dir) + Emotion + TypeScript
 
-<p><a href="https://github.com/ben-rogerson/twin.macro#gh-light-mode-only" target="_blank"><img src="../.github/twin-light.svg" alt="Twin" width="60" height="70"></a><a href="https://github.com/ben-rogerson/twin.macro#gh-dark-mode-only" target="_blank"><img src="../.github/twin-dark.svg" alt="Twin" width="60" height="70"></a><a href="https://nextjs.org#gh-light-mode-only" target="_blank"><img src="../.github/next-light.svg" alt="Next.js" width="80" height="70"></a><a href="https://nextjs.org#gh-dark-mode-only" target="_blank"><img src="../.github/next-dark.svg" alt="Next.js" width="80" height="70"></a><a href="https://emotion.sh/docs/introduction" target="_blank"><img src="../.github/emotion.svg" alt="Emotion" width="60" height="70"></a><a href="https://www.typescriptlang.org/" target="_blank"><img src="../.github/typescript.svg" alt="TypeScript" width="60" height="70"></a>
-</p>
 
-**Download this example using [degit](https://github.com/Rich-Harris/degit)**
+I encountered an error("ReactServerComponentsError") when using useState as follows:
 
+1. I download next-emotion-typescript project by command below on 01.23.2024 (with example project updated three days ago)
 ```shell
 npx degit https://github.com/ben-rogerson/twin.examples/next-emotion-typescript folder-name
 ```
 
-From within the new folder, run `npm install`, then `npm run dev` to start the dev server.
+2. From within the new folder, run `npm install`, then `npm run dev` to start the dev server.
 
-**TIP**: This example uses the app folder which is "server first". We add styles to the lower components and keep styles out of `app/page.tsx` and `app/layout.tsx`. This will ensure only lower components will need to be marked as client components with `use client`.
+3. add `TestComponent` in `/src/app/components/TestComponents.tsx`
+  - this compoenent is a simple counter component
+  - I write `use client` because I use `useState` & `twin.macro`
+  ```
+    /** @jsxImportSource @emotion/react */
+    'use client'
+    import 'twin.macro'
+    
+    import { useState } from 'react'
+    import { Button } from '@/components'
+    
+    export default function TestComponent() {
+      const [count, setCount] = useState(0)
+      return (
+        <div tw="flex justify-center items-center h-screen flex-col">
+          <p tw="mb-8">count: {count}</p>
+          <div tw="w-60 flex justify-between">
+            <Button variant="primary" onClick={() => setCount(count + 1)}>
+              plus
+            </Button>
+            <Button variant="primary" onClick={() => setCount(count - 1)}>
+              minus
+            </Button>
+          </div>
+        </div>
+      )
+    }
+  ```
 
-## Customization
+4. import "TestComponent" in Test page("/src/app/test/page.tsx")
+  - I think I don't need to  specify "use client" at the top of a file to make it a client side component,
+  - because Test page file don't have any React hooks or twin.macro code
 
-- [View the config options →](https://github.com/ben-rogerson/twin.macro/blob/master/docs/options.md)
-- [Customizing the tailwind config →](https://github.com/ben-rogerson/twin.macro/blob/master/docs/customizing-config.md)
+5. But I encountered an error("ReactServerComponentsError")
 
-[](#next-steps)
+```
+Error: 
+  × You're importing a component that needs useState. It only works in a Client Component but none of its parents are marked with "use client", so they're Server Components by default.
+  │ Learn more: https://nextjs.org/docs/getting-started/react-essentials
+  │ 
+  │ 
+   ╭─[/Users/jay/lfin/test/next14-twin-react-hook-error/src/components/TestComponents.tsx:2:1]
+ 2 │ function _EMOTION_STRINGIFIED_CSS_ERROR__() {
+ 3 │     return "You have tried to stringify object returned from `css` function. It isn't supposed to be used directly (e.g. as value of the `className` prop), but rather handed to emotion so it can handle it (e.g. as value of `css` prop).";
+ 4 │ }
+ 5 │ import { useState } from "react";
+   ·          ────────
+ 6 │ import { Button } from "@/components";
+ 7 │ var _ref = "development" === "production" ? {
+ 8 │     name: "15ls8gv",
+   ╰────
 
-## Next steps
+Import trace for requested module:
+./src/components/TestComponents.tsx
+./src/app/test/page.tsx
+```
 
-Learn how to work with twin
-
-- [The prop styling guide](https://github.com/ben-rogerson/twin.macro/blob/master/docs/prop-styling-guide.md) - A must-read guide to level up on prop styling
-- [The styled component guide](https://github.com/ben-rogerson/twin.macro/blob/master/docs/styled-component-guide.md) - A must-read guide on getting productive with styled-components
-
-Learn more about emotion
-
-- [Emotion’s css prop](https://emotion.sh/docs/css-prop)
-- [Emotion’s css import](https://emotion.sh/docs/css-prop#string-styles)
-- [Emotion’s styled import](https://emotion.sh/docs/styled)
+I did not encounter this error before setting twin.macro, but I encountered this error after setting twin.macro and am curious as to why🥹
