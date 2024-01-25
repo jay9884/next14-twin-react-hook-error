@@ -1,6 +1,82 @@
 # Twin + Next.js (App dir) + Emotion + TypeScript
 
+Problem solved with https://github.com/ben-rogerson/twin.macro/issues/788#issuecomment-1909385071
 
+1. install `babel-plugin-twin`
+
+2. next.config.mjs
+```
+import withTwin from './withTwin.mjs';
+
+/** @type {import('next').NextConfig} */
+const nextConfig = withTwin({
+  reactStrictMode: true,
+});
+
+export default nextConfig;
+```
+
+3. withTwin.mjs
+```
+import babelPluginTwin from 'babel-plugin-twin';
+import babelPluginMacros from 'babel-plugin-macros';
+import babelPluginTypescript from '@babel/plugin-syntax-typescript';
+
+import * as path from 'path';
+import * as url from 'url';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+// The folders containing files importing twin.macro
+const includedDirs = [path.resolve(__dirname, 'src')];
+
+/** @returns {import('next').NextConfig} */
+export default function withTwin(
+  /** @type {import('next').NextConfig} */
+  nextConfig,
+) {
+  return {
+    ...nextConfig,
+    compiler: {
+      ...nextConfig.compiler,
+      // styledComponents: true,
+    },
+    webpack(config, options) {
+      const {dev} = options;
+      config.module = config.module || {};
+      config.module.rules = config.module.rules || [];
+
+      config.module.rules.push({
+        test: /\.(tsx|ts)$/,
+        include: includedDirs,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              sourceMaps: dev,
+              plugins: [
+                babelPluginTwin,
+                babelPluginMacros,
+                // no more need for babel-plugin-styled-components
+                // see: https://nextjs.org/docs/architecture/nextjs-compiler#styled-components
+                [babelPluginTypescript, {isTSX: true}],
+              ],
+            },
+          },
+        ],
+      });
+
+      if (typeof nextConfig.webpack === 'function') {
+        return nextConfig.webpack(config, options);
+      }
+      return config;
+    },
+  };
+}
+
+```
+
+---
 I encountered an error("ReactServerComponentsError") when using useState as follows:
 
 1. I download next-emotion-typescript project by command below on 01.23.2024 (with example project updated three days ago)
